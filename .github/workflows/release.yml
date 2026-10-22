@@ -1,0 +1,39 @@
+name: Build plugin zip
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check that tag matches plugin Version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          VER=$(grep -m1 -E '^\s*\*\s*Version:' sw-whatsapp-button.php | awk '{print $NF}')
+          echo "Tag: $TAG  /  Version in plugin: $VER"
+          if [ "$TAG" != "$VER" ]; then
+            echo "::error::La etiqueta ($TAG) no coincide con Version ($VER) en sw-whatsapp-button.php"
+            exit 1
+          fi
+
+      - name: Build zip
+        run: |
+          mkdir -p build/sw-whatsapp-button
+          rsync -a \
+            --exclude='.git' --exclude='.github' --exclude='.gitignore' \
+            --exclude='/build' --exclude='/README.md' \
+            ./ build/sw-whatsapp-button/
+          cd build
+          zip -rq sw-whatsapp-button.zip sw-whatsapp-button
+
+      - name: Attach zip to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$GITHUB_REF_NAME" build/sw-whatsapp-button.zip --clobber
