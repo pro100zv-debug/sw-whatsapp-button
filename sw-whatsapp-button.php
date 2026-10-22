@@ -3,7 +3,7 @@
  * Plugin Name:       SW WhatsApp Button
  * Plugin URI:        https://github.com/pro100zv-debug/sw-whatsapp-button
  * Description:       Botón flotante de WhatsApp adaptativo. Número, mensaje, colores y posición en Ajustes → WhatsApp.
- * Version:           1.3.0
+ * Version:           1.3.1
  * Author:            Sergio
  * Requires at least: 5.8
  * Requires PHP:      7.4
@@ -62,6 +62,11 @@ final class SW_WhatsApp_Button {
 			'hide_ids' => '',
 			'hide_woo' => 1,
 		);
+	}
+
+	public static function version() {
+		$data = get_file_data( __FILE__, array( 'Version' => 'Version' ) );
+		return $data['Version'];
 	}
 
 	public static function get() {
@@ -188,7 +193,7 @@ final class SW_WhatsApp_Button {
 		$n = self::OPT;
 		?>
 		<div class="wrap">
-			<h1>WhatsApp Button</h1>
+			<h1>WhatsApp Button <span style="font-size:13px;font-weight:400;color:#646970">v<?php echo esc_html( self::version() ); ?></span></h1>
 			<form method="post" action="options.php">
 				<?php settings_fields( self::SLUG ); ?>
 				<table class="form-table" role="presentation">
