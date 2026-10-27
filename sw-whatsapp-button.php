@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       SW WhatsApp Button
  * Description:       Botón flotante de WhatsApp adaptativo. Número, mensaje, colores y posición en Ajustes → WhatsApp.
- * Version:           1.5.0
- * Author:            Sergio Web
+ * Version:           1.4.1
+ * Author:            SergioWeb
  * Author URI:        https://sergioweb.es/
  * Requires at least: 5.8
  * Requires PHP:      7.4
@@ -39,7 +39,7 @@ final class SW_WhatsApp_Button {
 	const OPT        = 'sw_whatsapp';
 	const SLUG       = 'sw-whatsapp';
 	const DB_OPT     = 'sw_whatsapp_db';
-	const DB_VERSION = '1.3.0';
+	const DB_VERSION = '1.4.1';
 
 	public static function defaults() {
 		return array(
@@ -97,26 +97,37 @@ final class SW_WhatsApp_Button {
 	/* ---------- Migración de datos entre versiones ---------- */
 
 	public static function maybe_upgrade() {
-		if ( version_compare( (string) get_option( self::DB_OPT, '0' ), self::DB_VERSION, '>=' ) ) {
+		$db = (string) get_option( self::DB_OPT, '0' );
+		if ( version_compare( $db, self::DB_VERSION, '>=' ) ) {
 			return;
 		}
 
-		$saved = get_option( self::OPT, null );
+		$saved   = get_option( self::OPT, null );
+		$changed = false;
 
 		if ( is_array( $saved ) ) {
 			// 1.3.0: los textos por defecto de versiones anteriores se vacían.
 			// Si el usuario escribió su propio texto, se respeta.
-			$old_defaults = array(
-				'message' => 'Hola, tengo una consulta sobre: {title}',
-				'label'   => '¿Hablamos?',
-			);
-			$changed = false;
-			foreach ( $old_defaults as $key => $old ) {
-				if ( isset( $saved[ $key ] ) && trim( (string) $saved[ $key ] ) === $old ) {
-					$saved[ $key ] = '';
-					$changed       = true;
+			if ( version_compare( $db, '1.3.0', '<' ) ) {
+				$old_defaults = array(
+					'message' => 'Hola, tengo una consulta sobre: {title}',
+					'label'   => '¿Hablamos?',
+				);
+				foreach ( $old_defaults as $key => $old ) {
+					if ( isset( $saved[ $key ] ) && trim( (string) $saved[ $key ] ) === $old ) {
+						$saved[ $key ] = '';
+						$changed       = true;
+					}
 				}
 			}
+
+			// 1.4.1: si había una imagen propia, se marca la opción «Imagen propia»
+			// para que el botón siga mostrando exactamente lo mismo.
+			if ( version_compare( $db, '1.4.1', '<' ) && ! empty( $saved['icon_url'] ) ) {
+				$saved['icon'] = 'custom';
+				$changed       = true;
+			}
+
 			if ( $changed ) {
 				update_option( self::OPT, $saved );
 			}
@@ -169,8 +180,8 @@ final class SW_WhatsApp_Button {
 		$out['offset_x'] = min( 200, absint( $in['offset_x'] ?? $d['offset_x'] ) );
 		$out['offset_y'] = min( 300, absint( $in['offset_y'] ?? $d['offset_y'] ) );
 		$out['size']     = max( 40, min( 100, absint( $in['size'] ?? $d['size'] ) ) );
-		$out['icon']     = ( ( $in['icon'] ?? '' ) === 'chat' ) ? 'chat' : 'whatsapp';
 		$out['icon_url'] = esc_url_raw( $in['icon_url'] ?? '' );
+		$out['icon']     = ( ( $in['icon'] ?? '' ) === 'custom' && $out['icon_url'] ) ? 'custom' : 'whatsapp';
 		$ids             = array_filter( array_map( 'absint', explode( ',', (string) ( $in['hide_ids'] ?? '' ) ) ) );
 		$out['hide_ids'] = implode( ',', array_unique( $ids ) );
 
@@ -195,6 +206,8 @@ final class SW_WhatsApp_Button {
 					f.open();
 				});
 				$('#sw-icon-clear').on('click',function(e){ e.preventDefault(); $('#sw-icon-url').val(''); });
+				function swIcon(){ $('#sw-icon-custom').toggle($('input[name=\"sw_whatsapp[icon]\"]:checked').val()==='custom'); }
+				$('input[name=\"sw_whatsapp[icon]\"]').on('change',swIcon); swIcon();
 			});"
 		);
 	}
@@ -252,14 +265,16 @@ final class SW_WhatsApp_Button {
 						<th scope="row">Icono</th>
 						<td>
 							<p>
-								<label><input type="radio" name="<?php echo esc_attr( $n ); ?>[icon]" value="whatsapp" <?php checked( $o['icon'], 'whatsapp' ); ?>> WhatsApp (oficial, incluido)</label> &nbsp;
-								<label><input type="radio" name="<?php echo esc_attr( $n ); ?>[icon]" value="chat" <?php checked( $o['icon'], 'chat' ); ?>> Chat genérico</label>
+								<label><input type="radio" name="<?php echo esc_attr( $n ); ?>[icon]" value="whatsapp" <?php checked( 'custom' !== $o['icon'] ); ?>> WhatsApp (oficial, incluido)</label> &nbsp;
+								<label><input type="radio" name="<?php echo esc_attr( $n ); ?>[icon]" value="custom" <?php checked( $o['icon'], 'custom' ); ?>> Subir el tuyo</label>
 							</p>
-							<p class="description" style="margin-bottom:8px">Ambos toman el color «Icono». Imagen propia (opcional, sustituye a los anteriores):</p>
-							<input id="sw-icon-url" type="url" class="regular-text" name="<?php echo esc_attr( $n ); ?>[icon_url]" value="<?php echo esc_attr( $o['icon_url'] ); ?>">
-							<button class="button" id="sw-icon-pick">Elegir</button>
-							<button class="button-link" id="sw-icon-clear">Quitar</button>
-							<p class="description">SVG/PNG de la biblioteca de medios. No se recolorea. Vacío = se usa el icono elegido arriba.</p>
+							<p class="description">El icono oficial toma el color «Icono».</p>
+							<div id="sw-icon-custom" style="margin-top:10px">
+								<input id="sw-icon-url" type="url" class="regular-text" name="<?php echo esc_attr( $n ); ?>[icon_url]" value="<?php echo esc_attr( $o['icon_url'] ); ?>">
+								<button class="button" id="sw-icon-pick">Elegir</button>
+								<button class="button-link" id="sw-icon-clear">Quitar</button>
+								<p class="description">SVG/PNG de la biblioteca de medios, cuadrado y con fondo transparente. Se muestra tal cual (no se recolorea).</p>
+							</div>
 						</td>
 					</tr>
 					<tr>
@@ -398,13 +413,14 @@ final class SW_WhatsApp_Button {
 
 		$glyph = plugins_url( 'icons/whatsapp-glyph.svg', __FILE__ );
 
-		if ( $o['icon_url'] ) {
+		if ( 'custom' === $o['icon'] && $o['icon_url'] ) {
 			$icon = '<img src="' . esc_url( $o['icon_url'] ) . '" alt="" width="32" height="32" loading="lazy" decoding="async">';
-		} elseif ( 'whatsapp' === $o['icon'] ) {
+		} elseif ( 'chat' === $o['icon'] ) {
+			// Compatibilidad: webs que eligieron «Chat genérico» en versiones anteriores.
+			$icon = self::default_icon();
+		} else {
 			$icon   = '<span class="sw-wa__glyph" aria-hidden="true"></span>';
 			$style .= "--sw-glyph:url('" . esc_url( $glyph ) . "');";
-		} else {
-			$icon = self::default_icon();
 		}
 
 		$target = ! empty( $o['new_tab'] ) ? ' target="_blank"' : '';
