@@ -1,10 +1,10 @@
 <?php
 /**
  * Plugin Name:       SW WhatsApp Button
- * Plugin URI:        https://github.com/pro100zv-debug/sw-whatsapp-button
  * Description:       Botón flotante de WhatsApp adaptativo. Número, mensaje, colores y posición en Ajustes → WhatsApp.
- * Version:           1.3.1
- * Author:            Sergio
+ * Version:           1.4.0
+ * Author:            Sergio Web
+ * Author URI:        https://sergioweb.es/
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * License:           GPL-2.0-or-later
@@ -49,6 +49,7 @@ final class SW_WhatsApp_Button {
 			'label'    => '',
 			'bg'       => '#25D366',
 			'fg'       => '#FFFFFF',
+			'bg_hover' => '',
 			'position' => 'right',
 			'offset_x' => 20,
 			'offset_y' => 20,
@@ -81,6 +82,14 @@ final class SW_WhatsApp_Button {
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'admin_assets' ) );
 		add_action( 'wp_footer', array( __CLASS__, 'render' ), 99 );
 		add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( __CLASS__, 'action_links' ) );
+		add_filter( 'plugin_row_meta', array( __CLASS__, 'row_meta' ), 10, 2 );
+	}
+
+	public static function row_meta( $links, $file ) {
+		if ( plugin_basename( __FILE__ ) === $file ) {
+			$links[] = '<a href="https://sergioweb.es/" target="_blank" rel="noopener">Visitar la web del autor</a>';
+		}
+		return $links;
 	}
 
 	/* ---------- Migración de datos entre versiones ---------- */
@@ -151,6 +160,7 @@ final class SW_WhatsApp_Button {
 		$out['label']    = sanitize_text_field( $in['label'] ?? '' );
 		$out['bg']       = sanitize_hex_color( $in['bg'] ?? '' ) ?: $d['bg'];
 		$out['fg']       = sanitize_hex_color( $in['fg'] ?? '' ) ?: $d['fg'];
+		$out['bg_hover'] = (string) sanitize_hex_color( $in['bg_hover'] ?? '' );
 		$out['position'] = ( ( $in['position'] ?? '' ) === 'left' ) ? 'left' : 'right';
 		$out['offset_x'] = min( 200, absint( $in['offset_x'] ?? $d['offset_x'] ) );
 		$out['offset_y'] = min( 300, absint( $in['offset_y'] ?? $d['offset_y'] ) );
@@ -227,6 +237,8 @@ final class SW_WhatsApp_Button {
 						<td>
 							<p><input type="text" class="sw-color" name="<?php echo esc_attr( $n ); ?>[bg]" value="<?php echo esc_attr( $o['bg'] ); ?>" data-default-color="#25D366"> Fondo del botón</p>
 							<p><input type="text" class="sw-color" name="<?php echo esc_attr( $n ); ?>[fg]" value="<?php echo esc_attr( $o['fg'] ); ?>" data-default-color="#FFFFFF"> Icono</p>
+							<p><input type="text" class="sw-color" name="<?php echo esc_attr( $n ); ?>[bg_hover]" value="<?php echo esc_attr( $o['bg_hover'] ); ?>" data-default-color=""> Fondo al pasar el ratón</p>
+							<p class="description">Opcional. Vacío («Borrar») = el botón no cambia de color al pasar el ratón.</p>
 						</td>
 					</tr>
 					<tr>
@@ -352,6 +364,9 @@ final class SW_WhatsApp_Button {
 		if ( empty( $o['mobile'] ) ) {
 			$classes[] = 'sw-wa--no-mobile';
 		}
+		if ( ! empty( $o['bg_hover'] ) ) {
+			$classes[] = 'sw-wa--hover';
+		}
 
 		$style = sprintf(
 			'--sw-bg:%s;--sw-fg:%s;--sw-size:%dpx;--sw-x:%dpx;--sw-y:%dpx;',
@@ -361,6 +376,9 @@ final class SW_WhatsApp_Button {
 			$o['offset_x'],
 			$o['offset_y']
 		);
+		if ( ! empty( $o['bg_hover'] ) ) {
+			$style .= '--sw-bg-hover:' . $o['bg_hover'] . ';';
+		}
 
 		$glyph = plugins_url( 'icons/whatsapp-glyph.svg', __FILE__ );
 
@@ -382,6 +400,8 @@ final class SW_WhatsApp_Button {
 .sw-wa__btn svg,.sw-wa__btn img{width:55%;height:55%;object-fit:contain;display:block}
 .sw-wa__glyph{display:block;width:55%;height:55%;background:currentColor;-webkit-mask:var(--sw-glyph) center/contain no-repeat;mask:var(--sw-glyph) center/contain no-repeat}
 .sw-wa:hover .sw-wa__btn{transform:scale(1.08)}
+.sw-wa--hover .sw-wa__btn{transition:transform .2s ease,background-color .2s ease}
+.sw-wa--hover:hover .sw-wa__btn,.sw-wa--hover:focus-visible .sw-wa__btn{background:var(--sw-bg-hover)}
 .sw-wa:focus{outline:none}
 .sw-wa:focus-visible .sw-wa__btn{outline:3px solid var(--sw-bg);outline-offset:3px}
 .sw-wa__label{background:#fff;color:#1f2937;font:500 14px/1.3 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:8px 12px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.15);white-space:nowrap}
