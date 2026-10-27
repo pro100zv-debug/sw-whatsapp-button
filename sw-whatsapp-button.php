@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       SW WhatsApp Button
  * Description:       Botón flotante de WhatsApp adaptativo. Número, mensaje, colores y posición en Ajustes → WhatsApp.
- * Version:           1.4.0
+ * Version:           1.5.0
  * Author:            Sergio Web
  * Author URI:        https://sergioweb.es/
  * Requires at least: 5.8
@@ -50,6 +50,8 @@ final class SW_WhatsApp_Button {
 			'bg'       => '#25D366',
 			'fg'       => '#FFFFFF',
 			'bg_hover' => '',
+			'pulse_color' => '',
+			'pulse_hover' => '',
 			'position' => 'right',
 			'offset_x' => 20,
 			'offset_y' => 20,
@@ -161,6 +163,8 @@ final class SW_WhatsApp_Button {
 		$out['bg']       = sanitize_hex_color( $in['bg'] ?? '' ) ?: $d['bg'];
 		$out['fg']       = sanitize_hex_color( $in['fg'] ?? '' ) ?: $d['fg'];
 		$out['bg_hover'] = (string) sanitize_hex_color( $in['bg_hover'] ?? '' );
+		$out['pulse_color'] = (string) sanitize_hex_color( $in['pulse_color'] ?? '' );
+		$out['pulse_hover'] = (string) sanitize_hex_color( $in['pulse_hover'] ?? '' );
 		$out['position'] = ( ( $in['position'] ?? '' ) === 'left' ) ? 'left' : 'right';
 		$out['offset_x'] = min( 200, absint( $in['offset_x'] ?? $d['offset_x'] ) );
 		$out['offset_y'] = min( 300, absint( $in['offset_y'] ?? $d['offset_y'] ) );
@@ -239,6 +243,9 @@ final class SW_WhatsApp_Button {
 							<p><input type="text" class="sw-color" name="<?php echo esc_attr( $n ); ?>[fg]" value="<?php echo esc_attr( $o['fg'] ); ?>" data-default-color="#FFFFFF"> Icono</p>
 							<p><input type="text" class="sw-color" name="<?php echo esc_attr( $n ); ?>[bg_hover]" value="<?php echo esc_attr( $o['bg_hover'] ); ?>" data-default-color=""> Fondo al pasar el ratón</p>
 							<p class="description">Opcional. Vacío («Borrar») = el botón no cambia de color al pasar el ratón.</p>
+							<p style="margin-top:14px"><input type="text" class="sw-color" name="<?php echo esc_attr( $n ); ?>[pulse_color]" value="<?php echo esc_attr( $o['pulse_color'] ); ?>" data-default-color=""> Pulso</p>
+							<p><input type="text" class="sw-color" name="<?php echo esc_attr( $n ); ?>[pulse_hover]" value="<?php echo esc_attr( $o['pulse_hover'] ); ?>" data-default-color=""> Pulso al pasar el ratón</p>
+							<p class="description">Opcionales. «Pulso» vacío = mismo color que el fondo del botón. «Pulso al pasar el ratón» vacío = no cambia. Solo si la animación de pulso está activada (más abajo, en Opciones).</p>
 						</td>
 					</tr>
 					<tr>
@@ -367,6 +374,9 @@ final class SW_WhatsApp_Button {
 		if ( ! empty( $o['bg_hover'] ) ) {
 			$classes[] = 'sw-wa--hover';
 		}
+		if ( ! empty( $o['pulse_hover'] ) ) {
+			$classes[] = 'sw-wa--pulse-hover';
+		}
 
 		$style = sprintf(
 			'--sw-bg:%s;--sw-fg:%s;--sw-size:%dpx;--sw-x:%dpx;--sw-y:%dpx;',
@@ -378,6 +388,12 @@ final class SW_WhatsApp_Button {
 		);
 		if ( ! empty( $o['bg_hover'] ) ) {
 			$style .= '--sw-bg-hover:' . $o['bg_hover'] . ';';
+		}
+		if ( ! empty( $o['pulse_color'] ) ) {
+			$style .= '--sw-pulse:' . $o['pulse_color'] . ';';
+		}
+		if ( ! empty( $o['pulse_hover'] ) ) {
+			$style .= '--sw-pulse-hover:' . $o['pulse_hover'] . ';';
 		}
 
 		$glyph = plugins_url( 'icons/whatsapp-glyph.svg', __FILE__ );
@@ -405,7 +421,8 @@ final class SW_WhatsApp_Button {
 .sw-wa:focus{outline:none}
 .sw-wa:focus-visible .sw-wa__btn{outline:3px solid var(--sw-bg);outline-offset:3px}
 .sw-wa__label{background:#fff;color:#1f2937;font:500 14px/1.3 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:8px 12px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.15);white-space:nowrap}
-.sw-wa--pulse .sw-wa__btn::before{content:"";position:absolute;inset:0;border-radius:50%;background:var(--sw-bg);z-index:-1;animation:sw-wa-pulse 2s ease-out infinite}
+.sw-wa--pulse .sw-wa__btn::before{content:"";position:absolute;inset:0;border-radius:50%;background:var(--sw-pulse,var(--sw-bg));z-index:-1;animation:sw-wa-pulse 2s ease-out infinite}
+.sw-wa--pulse-hover:hover .sw-wa__btn::before,.sw-wa--pulse-hover:focus-visible .sw-wa__btn::before{background:var(--sw-pulse-hover)}
 @keyframes sw-wa-pulse{0%{transform:scale(1);opacity:.6}100%{transform:scale(1.6);opacity:0}}
 @media (max-width:767px){.sw-wa__btn{width:calc(var(--sw-size)*.85);height:calc(var(--sw-size)*.85)}.sw-wa__label{display:none}}
 @media (max-width:1024px){.sw-wa--no-mobile{display:none}}
