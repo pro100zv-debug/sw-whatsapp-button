@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       SW WhatsApp Button
  * Description:       Botón flotante de WhatsApp adaptativo. Número, mensaje, colores y posición en Ajustes → WhatsApp.
- * Version:           1.4.1
+ * Version:           1.5.0
  * Author:            SergioWeb
  * Author URI:        https://sergioweb.es/
  * Requires at least: 5.8
@@ -193,6 +193,11 @@ final class SW_WhatsApp_Button {
 			return;
 		}
 		wp_enqueue_style( 'wp-color-picker' );
+		// Color vacío (transparente / sin cambio): cuadros como en Photoshop.
+		wp_add_inline_style(
+			'wp-color-picker',
+			'.sw-wa-settings .wp-color-result:not([style*="background-color"]){background-color:#fff;background-image:repeating-conic-gradient(#d0d0d0 0 25%,#fff 0 50%);background-size:10px 10px}'
+		);
 		wp_enqueue_script( 'wp-color-picker' );
 		wp_enqueue_media();
 		wp_add_inline_script(
@@ -219,7 +224,7 @@ final class SW_WhatsApp_Button {
 		$o = self::get();
 		$n = self::OPT;
 		?>
-		<div class="wrap">
+		<div class="wrap sw-wa-settings">
 			<h1>WhatsApp Button <span style="font-size:13px;font-weight:400;color:#646970">v<?php echo esc_html( self::version() ); ?></span></h1>
 			<form method="post" action="options.php">
 				<?php settings_fields( self::SLUG ); ?>
