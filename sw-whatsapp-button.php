@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       SW WhatsApp Button
  * Description:       Botón flotante de WhatsApp adaptativo. Número, mensaje, colores y posición en Ajustes → WhatsApp.
- * Version:           1.5.0
+ * Version:           1.5.1
  * Author:            SergioWeb
  * Author URI:        https://sergioweb.es/
  * Requires at least: 5.8
@@ -84,14 +84,6 @@ final class SW_WhatsApp_Button {
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'admin_assets' ) );
 		add_action( 'wp_footer', array( __CLASS__, 'render' ), 99 );
 		add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( __CLASS__, 'action_links' ) );
-		add_filter( 'plugin_row_meta', array( __CLASS__, 'row_meta' ), 10, 2 );
-	}
-
-	public static function row_meta( $links, $file ) {
-		if ( plugin_basename( __FILE__ ) === $file ) {
-			$links[] = '<a href="https://sergioweb.es/" target="_blank" rel="noopener">Visitar la web del autor</a>';
-		}
-		return $links;
 	}
 
 	/* ---------- Migración de datos entre versiones ---------- */
