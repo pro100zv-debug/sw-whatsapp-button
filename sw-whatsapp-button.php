@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       SW WhatsApp Button
  * Description:       Botón flotante de WhatsApp adaptativo. Número, mensaje, colores y posición en Ajustes → WhatsApp.
- * Version:           1.5.1
+ * Version:           1.5.2
  * Author:            SergioWeb
  * Author URI:        https://sergioweb.es/
  * Requires at least: 5.8
@@ -131,7 +131,7 @@ final class SW_WhatsApp_Button {
 	/* ---------- Admin ---------- */
 
 	public static function menu() {
-		add_options_page( 'WhatsApp Button', 'WhatsApp', 'manage_options', self::SLUG, array( __CLASS__, 'page' ) );
+		add_options_page( 'SW WhatsApp', 'SW WhatsApp', 'manage_options', self::SLUG, array( __CLASS__, 'page' ) );
 	}
 
 	public static function action_links( $links ) {
@@ -217,7 +217,7 @@ final class SW_WhatsApp_Button {
 		$n = self::OPT;
 		?>
 		<div class="wrap sw-wa-settings">
-			<h1>WhatsApp Button <span style="font-size:13px;font-weight:400;color:#646970">v<?php echo esc_html( self::version() ); ?></span></h1>
+			<h1>SW WhatsApp <span style="font-size:13px;font-weight:400;color:#646970">v<?php echo esc_html( self::version() ); ?></span></h1>
 			<form method="post" action="options.php">
 				<?php settings_fields( self::SLUG ); ?>
 				<table class="form-table" role="presentation">
@@ -434,9 +434,9 @@ final class SW_WhatsApp_Button {
 .sw-wa:focus{outline:none}
 .sw-wa:focus-visible .sw-wa__btn{outline:3px solid var(--sw-bg);outline-offset:3px}
 .sw-wa__label{background:#fff;color:#1f2937;font:500 14px/1.3 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:8px 12px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.15);white-space:nowrap}
-.sw-wa--pulse .sw-wa__btn::before{content:"";position:absolute;inset:0;border-radius:50%;background:var(--sw-pulse,var(--sw-bg));z-index:-1;animation:sw-wa-pulse 2s ease-out infinite}
-.sw-wa--pulse-hover:hover .sw-wa__btn::before,.sw-wa--pulse-hover:focus-visible .sw-wa__btn::before{background:var(--sw-pulse-hover)}
-@keyframes sw-wa-pulse{0%{transform:scale(1);opacity:.6}100%{transform:scale(1.6);opacity:0}}
+.sw-wa--pulse .sw-wa__btn::before{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;color:var(--sw-pulse,var(--sw-bg));animation:sw-wa-pulse 2s ease-out infinite}
+.sw-wa--pulse-hover:hover .sw-wa__btn::before,.sw-wa--pulse-hover:focus-visible .sw-wa__btn::before{color:var(--sw-pulse-hover)}
+@keyframes sw-wa-pulse{0%{box-shadow:0 0 0 0 currentColor}80%,100%{box-shadow:0 0 0 calc(var(--sw-size)*.3) transparent}}
 @media (max-width:767px){.sw-wa__btn{width:calc(var(--sw-size)*.85);height:calc(var(--sw-size)*.85)}.sw-wa__label{display:none}}
 @media (max-width:1024px){.sw-wa--no-mobile{display:none}}
 @media (min-width:1025px){.sw-wa--no-desktop{display:none}}
