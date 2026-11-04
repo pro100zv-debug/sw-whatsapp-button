@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       SW WhatsApp Button
  * Description:       Botón flotante de WhatsApp adaptativo. Número, mensaje, colores y posición en Ajustes → WhatsApp.
- * Version:           1.5.2
+ * Version:           1.5.3
  * Author:            SergioWeb
  * Author URI:        https://sergioweb.es/
  * Requires at least: 5.8

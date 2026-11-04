@@ -1,2 +1,1 @@
-- Pulso más nítido: ya no oscurece el botón al pasar el ratón.
-- El menú de ajustes se llama ahora «SW WhatsApp».
+- Nuevo icono del plugin.
