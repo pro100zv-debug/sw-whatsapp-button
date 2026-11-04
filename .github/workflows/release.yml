@@ -1,39 +1,81 @@
-name: Build plugin zip
+name: Release plugin
+
+# 1) Push a main con una «Version:» nueva en sw-whatsapp-button.php
+#    → se crea automáticamente la etiqueta vX.Y.Z, la Release y el zip.
+#    Las notas de la Release se toman de RELEASE_NOTES.md.
+# 2) Release publicada a mano en GitHub → solo se genera y adjunta el zip.
 
 on:
+  push:
+    branches: [main]
   release:
     types: [published]
 
 permissions:
   contents: write
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check that tag matches plugin Version
+      - name: Read plugin version
+        id: ver
         run: |
-          TAG="${GITHUB_REF_NAME#v}"
           VER=$(grep -m1 -E '^\s*\*\s*Version:' sw-whatsapp-button.php | awk '{print $NF}')
-          echo "Tag: $TAG  /  Version in plugin: $VER"
-          if [ "$TAG" != "$VER" ]; then
-            echo "::error::La etiqueta ($TAG) no coincide con Version ($VER) en sw-whatsapp-button.php"
-            exit 1
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          echo "Version in plugin: $VER"
+
+      - name: Decide what to do
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VER: ${{ steps.ver.outputs.version }}
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            TAG="${GITHUB_REF_NAME#v}"
+            if [ "$TAG" != "$VER" ]; then
+              echo "::error::La etiqueta ($TAG) no coincide con Version ($VER) en sw-whatsapp-button.php"
+              exit 1
+            fi
+            echo "mode=attach" >> "$GITHUB_OUTPUT"
+          elif gh release view "v$VER" >/dev/null 2>&1; then
+            echo "La release v$VER ya existe: no se hace nada."
+            echo "mode=skip" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=create" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Build zip
+        if: steps.plan.outputs.mode != 'skip'
         run: |
           mkdir -p build/sw-whatsapp-button
           rsync -a \
             --exclude='.git' --exclude='.github' --exclude='.gitignore' \
-            --exclude='/build' --exclude='/README.md' \
+            --exclude='/build' --exclude='/README.md' --exclude='/RELEASE_NOTES.md' \
             ./ build/sw-whatsapp-button/
           cd build
           zip -rq sw-whatsapp-button.zip sw-whatsapp-button
 
-      - name: Attach zip to release
+      - name: Create release
+        if: steps.plan.outputs.mode == 'create'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VER: ${{ steps.ver.outputs.version }}
+        run: |
+          if [ -s RELEASE_NOTES.md ]; then NOTES_FILE=RELEASE_NOTES.md; else echo "- Versión $VER" > /tmp/notes.md; NOTES_FILE=/tmp/notes.md; fi
+          gh release create "v$VER" build/sw-whatsapp-button.zip \
+            --target "$GITHUB_SHA" \
+            --title "$VER" \
+            --notes-file "$NOTES_FILE"
+
+      - name: Attach zip to existing release
+        if: steps.plan.outputs.mode == 'attach'
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release upload "$GITHUB_REF_NAME" build/sw-whatsapp-button.zip --clobber
