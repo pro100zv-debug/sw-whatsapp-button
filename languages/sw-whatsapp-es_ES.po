@@ -1,0 +1,147 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: SW WhatsApp Button\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Domain: sw-whatsapp\n"
+
+msgid "Floating, responsive WhatsApp button. Number, message, colors and position in Settings → SW WhatsApp."
+msgstr "Botón flotante de WhatsApp adaptativo. Número, mensaje, colores y posición en Ajustes → SW WhatsApp."
+
+msgid "Settings"
+msgstr "Ajustes"
+
+msgid "Button icon"
+msgstr "Icono del botón"
+
+msgid "Enable"
+msgstr "Activar"
+
+msgid "Show the button on the website"
+msgstr "Mostrar el botón en la web"
+
+msgid "WhatsApp number"
+msgstr "Número de WhatsApp"
+
+msgid "With country code, without “+” or spaces (they are removed automatically). Without a number the button is not shown."
+msgstr "Con prefijo de país, sin «+» ni espacios (se limpian solos). Sin número el botón no se muestra."
+
+msgid "Predefined message"
+msgstr "Mensaje predefinido"
+
+msgid "Hi, I have a question about: {title}"
+msgstr "Hola, tengo una consulta sobre: {title}"
+
+#, php-format
+msgid "Text already typed when the chat opens. Empty = empty chat. Variables: %1$s — page title, %2$s — page link."
+msgstr "Texto que aparece ya escrito al abrir el chat. Vacío = chat vacío. Variables: %1$s — título de la página, %2$s — enlace de la página."
+
+msgid "Text next to the button"
+msgstr "Texto junto al botón"
+
+msgid "Let’s talk?"
+msgstr "¿Hablamos?"
+
+msgid "Desktop and tablet only (≥ 768px). Empty = no text."
+msgstr "Solo en escritorio y tablet (≥ 768px). Vacío = sin texto."
+
+msgid "Colors"
+msgstr "Colores"
+
+msgid "Button background"
+msgstr "Fondo del botón"
+
+msgid "Icon"
+msgstr "Icono"
+
+msgid "Background on hover"
+msgstr "Fondo al pasar el ratón"
+
+msgid "Optional. Empty (“Clear”) = the button does not change color on hover."
+msgstr "Opcional. Vacío («Borrar») = el botón no cambia de color al pasar el ratón."
+
+msgid "Pulse"
+msgstr "Pulso"
+
+msgid "Pulse on hover"
+msgstr "Pulso al pasar el ratón"
+
+msgid "Optional. Empty “Pulse” = same color as the button background. Empty “Pulse on hover” = no change. Only when the pulse animation is enabled (below, in Options)."
+msgstr "Opcionales. «Pulso» vacío = mismo color que el fondo del botón. «Pulso al pasar el ratón» vacío = no cambia. Solo si la animación de pulso está activada (más abajo, en Opciones)."
+
+msgid "WhatsApp (official, included)"
+msgstr "WhatsApp (oficial, incluido)"
+
+msgid "Upload your own"
+msgstr "Subir el tuyo"
+
+msgid "The official icon uses the “Icon” color."
+msgstr "El icono oficial toma el color «Icono»."
+
+msgid "Choose"
+msgstr "Elegir"
+
+msgid "Remove"
+msgstr "Quitar"
+
+msgid "SVG/PNG from the media library, square with a transparent background. Shown as is (not recolored)."
+msgstr "SVG/PNG de la biblioteca de medios, cuadrado y con fondo transparente. Se muestra tal cual (no se recolorea)."
+
+msgid "Position"
+msgstr "Posición"
+
+msgid "Bottom right"
+msgstr "Abajo a la derecha"
+
+msgid "Bottom left"
+msgstr "Abajo a la izquierda"
+
+msgid "Side margin"
+msgstr "Margen lateral"
+
+msgid "Bottom margin"
+msgstr "Margen inferior"
+
+msgid "Size"
+msgstr "Tamaño"
+
+#, php-format
+msgid "On mobile the button is automatically reduced to 85%."
+msgstr "En móvil el botón se reduce automáticamente al 85%."
+
+msgid "Devices"
+msgstr "Dispositivos"
+
+msgid "Desktop (> 1024px)"
+msgstr "Escritorio (> 1024px)"
+
+msgid "Mobile and tablet (≤ 1024px)"
+msgstr "Móvil y tablet (≤ 1024px)"
+
+msgid "Options"
+msgstr "Opciones"
+
+msgid "Pulse animation"
+msgstr "Animación de pulso"
+
+msgid "Open in a new tab"
+msgstr "Abrir en pestaña nueva"
+
+msgid "Hide on WooCommerce cart and checkout"
+msgstr "Ocultar en carrito y checkout de WooCommerce"
+
+msgid "Hide on pages (ID)"
+msgstr "Ocultar en páginas (ID)"
+
+msgid "Page, post or product IDs separated by commas."
+msgstr "IDs de páginas, entradas o productos separados por comas."
+
+#, php-format
+msgid "Analytics: each click sends %1$s — create a custom event trigger %2$s in GTM."
+msgstr "Analítica: cada clic envía %1$s — crea en GTM un activador de evento personalizado %2$s."
+
+msgid "Write to us on WhatsApp"
+msgstr "Escríbenos por WhatsApp"

@@ -1,0 +1,145 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: SW WhatsApp Button\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: sw-whatsapp\n"
+
+msgid "Floating, responsive WhatsApp button. Number, message, colors and position in Settings → SW WhatsApp."
+msgstr ""
+
+msgid "Settings"
+msgstr ""
+
+msgid "Button icon"
+msgstr ""
+
+msgid "Enable"
+msgstr ""
+
+msgid "Show the button on the website"
+msgstr ""
+
+msgid "WhatsApp number"
+msgstr ""
+
+msgid "With country code, without “+” or spaces (they are removed automatically). Without a number the button is not shown."
+msgstr ""
+
+msgid "Predefined message"
+msgstr ""
+
+msgid "Hi, I have a question about: {title}"
+msgstr ""
+
+#, php-format
+msgid "Text already typed when the chat opens. Empty = empty chat. Variables: %1$s — page title, %2$s — page link."
+msgstr ""
+
+msgid "Text next to the button"
+msgstr ""
+
+msgid "Let’s talk?"
+msgstr ""
+
+msgid "Desktop and tablet only (≥ 768px). Empty = no text."
+msgstr ""
+
+msgid "Colors"
+msgstr ""
+
+msgid "Button background"
+msgstr ""
+
+msgid "Icon"
+msgstr ""
+
+msgid "Background on hover"
+msgstr ""
+
+msgid "Optional. Empty (“Clear”) = the button does not change color on hover."
+msgstr ""
+
+msgid "Pulse"
+msgstr ""
+
+msgid "Pulse on hover"
+msgstr ""
+
+msgid "Optional. Empty “Pulse” = same color as the button background. Empty “Pulse on hover” = no change. Only when the pulse animation is enabled (below, in Options)."
+msgstr ""
+
+msgid "WhatsApp (official, included)"
+msgstr ""
+
+msgid "Upload your own"
+msgstr ""
+
+msgid "The official icon uses the “Icon” color."
+msgstr ""
+
+msgid "Choose"
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "SVG/PNG from the media library, square with a transparent background. Shown as is (not recolored)."
+msgstr ""
+
+msgid "Position"
+msgstr ""
+
+msgid "Bottom right"
+msgstr ""
+
+msgid "Bottom left"
+msgstr ""
+
+msgid "Side margin"
+msgstr ""
+
+msgid "Bottom margin"
+msgstr ""
+
+msgid "Size"
+msgstr ""
+
+#, php-format
+msgid "On mobile the button is automatically reduced to 85%."
+msgstr ""
+
+msgid "Devices"
+msgstr ""
+
+msgid "Desktop (> 1024px)"
+msgstr ""
+
+msgid "Mobile and tablet (≤ 1024px)"
+msgstr ""
+
+msgid "Options"
+msgstr ""
+
+msgid "Pulse animation"
+msgstr ""
+
+msgid "Open in a new tab"
+msgstr ""
+
+msgid "Hide on WooCommerce cart and checkout"
+msgstr ""
+
+msgid "Hide on pages (ID)"
+msgstr ""
+
+msgid "Page, post or product IDs separated by commas."
+msgstr ""
+
+#, php-format
+msgid "Analytics: each click sends %1$s — create a custom event trigger %2$s in GTM."
+msgstr ""
+
+msgid "Write to us on WhatsApp"
+msgstr ""

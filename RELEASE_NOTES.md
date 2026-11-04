@@ -1,1 +1,2 @@
-- Nuevo icono del plugin.
+- Plugin translated: English by default, Spanish and Russian automatically according to the WordPress language.
+- Plugin traducido: inglés por defecto, español y ruso automáticamente según el idioma de WordPress.

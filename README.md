@@ -23,6 +23,12 @@ Manual (opcional): GitHub → Releases → **Draft a new release** → etiqueta 
 
 Los sitios ven la actualización en las próximas horas (o al instante con «Comprobar si hay actualizaciones» en Plugins).
 
+## Idiomas
+
+Inglés por defecto. Español (`es_ES`, y cualquier variante `es_*`) y ruso (`ru_RU`, y `ru_*`) se activan solos según el idioma de WordPress del usuario (Usuarios → Perfil → Idioma) o del sitio.
+
+Para añadir o cambiar textos: edita las traducciones en `tools/build_i18n.py` y ejecuta `python3 tools/build_i18n.py .` — regenera `languages/*.pot/.po/.mo` y avisa si falta alguna traducción.
+
 ## Hooks
 
 - `sw_whatsapp_phone` — cambiar el número por código.

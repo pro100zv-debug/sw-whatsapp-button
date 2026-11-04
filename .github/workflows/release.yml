@@ -57,7 +57,7 @@ jobs:
           mkdir -p build/sw-whatsapp-button
           rsync -a \
             --exclude='.git' --exclude='.github' --exclude='.gitignore' \
-            --exclude='/build' --exclude='/README.md' --exclude='/RELEASE_NOTES.md' \
+            --exclude='/build' --exclude='/README.md' --exclude='/RELEASE_NOTES.md' --exclude='/tools' \
             ./ build/sw-whatsapp-button/
           cd build
           zip -rq sw-whatsapp-button.zip sw-whatsapp-button

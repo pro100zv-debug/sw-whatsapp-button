@@ -1,0 +1,147 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: SW WhatsApp Button\n"
+"Language: ru_RU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Domain: sw-whatsapp\n"
+
+msgid "Floating, responsive WhatsApp button. Number, message, colors and position in Settings → SW WhatsApp."
+msgstr "Адаптивная плавающая кнопка WhatsApp. Номер, сообщение, цвета и положение — в Настройки → SW WhatsApp."
+
+msgid "Settings"
+msgstr "Настройки"
+
+msgid "Button icon"
+msgstr "Иконка кнопки"
+
+msgid "Enable"
+msgstr "Включить"
+
+msgid "Show the button on the website"
+msgstr "Показывать кнопку на сайте"
+
+msgid "WhatsApp number"
+msgstr "Номер WhatsApp"
+
+msgid "With country code, without “+” or spaces (they are removed automatically). Without a number the button is not shown."
+msgstr "С кодом страны, без «+» и пробелов (они удаляются автоматически). Без номера кнопка не показывается."
+
+msgid "Predefined message"
+msgstr "Готовое сообщение"
+
+msgid "Hi, I have a question about: {title}"
+msgstr "Здравствуйте, у меня вопрос по: {title}"
+
+#, php-format
+msgid "Text already typed when the chat opens. Empty = empty chat. Variables: %1$s — page title, %2$s — page link."
+msgstr "Текст, который уже будет написан при открытии чата. Пусто — чат пустой. Переменные: %1$s — заголовок страницы, %2$s — ссылка на страницу."
+
+msgid "Text next to the button"
+msgstr "Текст рядом с кнопкой"
+
+msgid "Let’s talk?"
+msgstr "Поговорим?"
+
+msgid "Desktop and tablet only (≥ 768px). Empty = no text."
+msgstr "Только на компьютере и планшете (≥ 768px). Пусто — без текста."
+
+msgid "Colors"
+msgstr "Цвета"
+
+msgid "Button background"
+msgstr "Фон кнопки"
+
+msgid "Icon"
+msgstr "Иконка"
+
+msgid "Background on hover"
+msgstr "Фон при наведении"
+
+msgid "Optional. Empty (“Clear”) = the button does not change color on hover."
+msgstr "Необязательно. Пусто («Сброс») — кнопка не меняет цвет при наведении."
+
+msgid "Pulse"
+msgstr "Пульсация"
+
+msgid "Pulse on hover"
+msgstr "Пульсация при наведении"
+
+msgid "Optional. Empty “Pulse” = same color as the button background. Empty “Pulse on hover” = no change. Only when the pulse animation is enabled (below, in Options)."
+msgstr "Необязательно. Пустая «Пульсация» — цвет фона кнопки. Пустая «Пульсация при наведении» — не меняется. Работает, только если включена анимация пульсации (ниже, в «Опциях»)."
+
+msgid "WhatsApp (official, included)"
+msgstr "WhatsApp (официальная, встроенная)"
+
+msgid "Upload your own"
+msgstr "Загрузить свою"
+
+msgid "The official icon uses the “Icon” color."
+msgstr "Официальная иконка окрашивается в цвет «Иконка»."
+
+msgid "Choose"
+msgstr "Выбрать"
+
+msgid "Remove"
+msgstr "Убрать"
+
+msgid "SVG/PNG from the media library, square with a transparent background. Shown as is (not recolored)."
+msgstr "SVG/PNG из медиатеки, квадратная, с прозрачным фоном. Показывается как есть (не перекрашивается)."
+
+msgid "Position"
+msgstr "Положение"
+
+msgid "Bottom right"
+msgstr "Внизу справа"
+
+msgid "Bottom left"
+msgstr "Внизу слева"
+
+msgid "Side margin"
+msgstr "Отступ сбоку"
+
+msgid "Bottom margin"
+msgstr "Отступ снизу"
+
+msgid "Size"
+msgstr "Размер"
+
+#, php-format
+msgid "On mobile the button is automatically reduced to 85%."
+msgstr "На телефонах кнопка автоматически уменьшается до 85%."
+
+msgid "Devices"
+msgstr "Устройства"
+
+msgid "Desktop (> 1024px)"
+msgstr "Компьютер (> 1024px)"
+
+msgid "Mobile and tablet (≤ 1024px)"
+msgstr "Телефон и планшет (≤ 1024px)"
+
+msgid "Options"
+msgstr "Опции"
+
+msgid "Pulse animation"
+msgstr "Анимация пульсации"
+
+msgid "Open in a new tab"
+msgstr "Открывать в новой вкладке"
+
+msgid "Hide on WooCommerce cart and checkout"
+msgstr "Скрывать в корзине и оформлении заказа WooCommerce"
+
+msgid "Hide on pages (ID)"
+msgstr "Скрывать на страницах (ID)"
+
+msgid "Page, post or product IDs separated by commas."
+msgstr "ID страниц, записей или товаров через запятую."
+
+#, php-format
+msgid "Analytics: each click sends %1$s — create a custom event trigger %2$s in GTM."
+msgstr "Аналитика: каждый клик отправляет %1$s — создайте в GTM триггер пользовательского события %2$s."
+
+msgid "Write to us on WhatsApp"
+msgstr "Напишите нам в WhatsApp"

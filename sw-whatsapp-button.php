@@ -1,14 +1,15 @@
 <?php
 /**
  * Plugin Name:       SW WhatsApp Button
- * Description:       Botón flotante de WhatsApp adaptativo. Número, mensaje, colores y posición en Ajustes → WhatsApp.
- * Version:           1.5.3
+ * Description:       Floating, responsive WhatsApp button. Number, message, colors and position in Settings → SW WhatsApp.
+ * Version:           1.6.0
  * Author:            SergioWeb
  * Author URI:        https://sergioweb.es/
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * License:           GPL-2.0-or-later
  * Text Domain:       sw-whatsapp
+ * Domain Path:       /languages
  * Update URI:        https://github.com/pro100zv-debug/sw-whatsapp-button
  */
 
@@ -16,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/* ---------- Actualizaciones desde GitHub ---------- */
+/* ---------- Updates from GitHub ---------- */
 
 if ( is_readable( __DIR__ . '/plugin-update-checker/plugin-update-checker.php' ) ) {
 	require_once __DIR__ . '/plugin-update-checker/plugin-update-checker.php';
@@ -27,7 +28,7 @@ if ( is_readable( __DIR__ . '/plugin-update-checker/plugin-update-checker.php' )
 		'sw-whatsapp-button'
 	);
 	$sw_whatsapp_updater->setBranch( 'main' );
-	// Solo se ofrecen releases que ya tienen el zip adjunto (lo genera GitHub Actions).
+	// Only releases that already have the zip attached (built by GitHub Actions).
 	$sw_whatsapp_updater->getVcsApi()->enableReleaseAssets(
 		'/sw-whatsapp-button\.zip($|[?&#])/i',
 		\YahnisElsts\PluginUpdateChecker\v5p7\Vcs\Api::REQUIRE_RELEASE_ASSETS
@@ -38,32 +39,42 @@ final class SW_WhatsApp_Button {
 
 	const OPT        = 'sw_whatsapp';
 	const SLUG       = 'sw-whatsapp';
+	const DOMAIN     = 'sw-whatsapp';
 	const DB_OPT     = 'sw_whatsapp_db';
 	const DB_VERSION = '1.4.1';
 
+	/**
+	 * Bundled translations. Any regional variant (es_MX, es_AR, ru_UA…)
+	 * falls back to the base file of its language.
+	 */
+	const BUNDLED_LANGS = array(
+		'es' => 'es_ES',
+		'ru' => 'ru_RU',
+	);
+
 	public static function defaults() {
 		return array(
-			'enabled'  => 1,
-			'phone'    => '',
-			'message'  => '',
-			'label'    => '',
-			'bg'       => '#25D366',
-			'fg'       => '#FFFFFF',
-			'bg_hover' => '',
+			'enabled'     => 1,
+			'phone'       => '',
+			'message'     => '',
+			'label'       => '',
+			'bg'          => '#25D366',
+			'fg'          => '#FFFFFF',
+			'bg_hover'    => '',
 			'pulse_color' => '',
 			'pulse_hover' => '',
-			'position' => 'right',
-			'offset_x' => 20,
-			'offset_y' => 20,
-			'size'     => 60,
-			'desktop'  => 1,
-			'mobile'   => 1,
-			'pulse'    => 1,
-			'new_tab'  => 1,
-			'icon'     => 'whatsapp',
-			'icon_url' => '',
-			'hide_ids' => '',
-			'hide_woo' => 1,
+			'position'    => 'right',
+			'offset_x'    => 20,
+			'offset_y'    => 20,
+			'size'        => 60,
+			'desktop'     => 1,
+			'mobile'      => 1,
+			'pulse'       => 1,
+			'new_tab'     => 1,
+			'icon'        => 'whatsapp',
+			'icon_url'    => '',
+			'hide_ids'    => '',
+			'hide_woo'    => 1,
 		);
 	}
 
@@ -78,6 +89,8 @@ final class SW_WhatsApp_Button {
 	}
 
 	public static function init() {
+		add_filter( 'load_textdomain_mofile', array( __CLASS__, 'mofile_fallback' ), 10, 2 );
+		add_action( 'init', array( __CLASS__, 'load_textdomain' ) );
 		add_action( 'plugins_loaded', array( __CLASS__, 'maybe_upgrade' ) );
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
 		add_action( 'admin_init', array( __CLASS__, 'register' ) );
@@ -86,7 +99,33 @@ final class SW_WhatsApp_Button {
 		add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( __CLASS__, 'action_links' ) );
 	}
 
-	/* ---------- Migración de datos entre versiones ---------- */
+	/* ---------- Translations ---------- */
+
+	public static function load_textdomain() {
+		load_plugin_textdomain( self::DOMAIN, false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+	}
+
+	/**
+	 * If there is no file for the exact locale (e.g. es_MX), use the bundled
+	 * base translation of the same language (es_ES). English is the default.
+	 */
+	public static function mofile_fallback( $mofile, $domain ) {
+		if ( self::DOMAIN !== $domain || is_readable( $mofile ) ) {
+			return $mofile;
+		}
+		if ( preg_match( '/' . preg_quote( self::DOMAIN, '/' ) . '-([a-z]{2,3})(?:_[A-Za-z0-9_]+)?\.mo$/', $mofile, $m ) ) {
+			$lang = strtolower( $m[1] );
+			if ( isset( self::BUNDLED_LANGS[ $lang ] ) ) {
+				$bundled = __DIR__ . '/languages/' . self::DOMAIN . '-' . self::BUNDLED_LANGS[ $lang ] . '.mo';
+				if ( is_readable( $bundled ) ) {
+					return $bundled;
+				}
+			}
+		}
+		return $mofile;
+	}
+
+	/* ---------- Data migrations between versions ---------- */
 
 	public static function maybe_upgrade() {
 		$db = (string) get_option( self::DB_OPT, '0' );
@@ -98,8 +137,7 @@ final class SW_WhatsApp_Button {
 		$changed = false;
 
 		if ( is_array( $saved ) ) {
-			// 1.3.0: los textos por defecto de versiones anteriores se vacían.
-			// Si el usuario escribió su propio texto, se respeta.
+			// 1.3.0: old default texts are cleared; texts written by the user are kept.
 			if ( version_compare( $db, '1.3.0', '<' ) ) {
 				$old_defaults = array(
 					'message' => 'Hola, tengo una consulta sobre: {title}',
@@ -113,8 +151,8 @@ final class SW_WhatsApp_Button {
 				}
 			}
 
-			// 1.4.1: si había una imagen propia, se marca la opción «Imagen propia»
-			// para que el botón siga mostrando exactamente lo mismo.
+			// 1.4.1: if there was a custom image, select the "custom icon" option
+			// so the button keeps showing exactly the same.
 			if ( version_compare( $db, '1.4.1', '<' ) && ! empty( $saved['icon_url'] ) ) {
 				$saved['icon'] = 'custom';
 				$changed       = true;
@@ -135,7 +173,7 @@ final class SW_WhatsApp_Button {
 	}
 
 	public static function action_links( $links ) {
-		array_unshift( $links, '<a href="' . esc_url( admin_url( 'options-general.php?page=' . self::SLUG ) ) . '">Ajustes</a>' );
+		array_unshift( $links, '<a href="' . esc_url( admin_url( 'options-general.php?page=' . self::SLUG ) ) . '">' . esc_html__( 'Settings', 'sw-whatsapp' ) . '</a>' );
 		return $links;
 	}
 
@@ -160,22 +198,22 @@ final class SW_WhatsApp_Button {
 			$out[ $k ] = empty( $in[ $k ] ) ? 0 : 1;
 		}
 
-		$out['phone']    = preg_replace( '/\D+/', '', (string) ( $in['phone'] ?? '' ) );
-		$out['message']  = sanitize_textarea_field( $in['message'] ?? '' );
-		$out['label']    = sanitize_text_field( $in['label'] ?? '' );
-		$out['bg']       = sanitize_hex_color( $in['bg'] ?? '' ) ?: $d['bg'];
-		$out['fg']       = sanitize_hex_color( $in['fg'] ?? '' ) ?: $d['fg'];
-		$out['bg_hover'] = (string) sanitize_hex_color( $in['bg_hover'] ?? '' );
+		$out['phone']       = preg_replace( '/\D+/', '', (string) ( $in['phone'] ?? '' ) );
+		$out['message']     = sanitize_textarea_field( $in['message'] ?? '' );
+		$out['label']       = sanitize_text_field( $in['label'] ?? '' );
+		$out['bg']          = sanitize_hex_color( $in['bg'] ?? '' ) ?: $d['bg'];
+		$out['fg']          = sanitize_hex_color( $in['fg'] ?? '' ) ?: $d['fg'];
+		$out['bg_hover']    = (string) sanitize_hex_color( $in['bg_hover'] ?? '' );
 		$out['pulse_color'] = (string) sanitize_hex_color( $in['pulse_color'] ?? '' );
 		$out['pulse_hover'] = (string) sanitize_hex_color( $in['pulse_hover'] ?? '' );
-		$out['position'] = ( ( $in['position'] ?? '' ) === 'left' ) ? 'left' : 'right';
-		$out['offset_x'] = min( 200, absint( $in['offset_x'] ?? $d['offset_x'] ) );
-		$out['offset_y'] = min( 300, absint( $in['offset_y'] ?? $d['offset_y'] ) );
-		$out['size']     = max( 40, min( 100, absint( $in['size'] ?? $d['size'] ) ) );
-		$out['icon_url'] = esc_url_raw( $in['icon_url'] ?? '' );
-		$out['icon']     = ( ( $in['icon'] ?? '' ) === 'custom' && $out['icon_url'] ) ? 'custom' : 'whatsapp';
-		$ids             = array_filter( array_map( 'absint', explode( ',', (string) ( $in['hide_ids'] ?? '' ) ) ) );
-		$out['hide_ids'] = implode( ',', array_unique( $ids ) );
+		$out['position']    = ( ( $in['position'] ?? '' ) === 'left' ) ? 'left' : 'right';
+		$out['offset_x']    = min( 200, absint( $in['offset_x'] ?? $d['offset_x'] ) );
+		$out['offset_y']    = min( 300, absint( $in['offset_y'] ?? $d['offset_y'] ) );
+		$out['size']        = max( 40, min( 100, absint( $in['size'] ?? $d['size'] ) ) );
+		$out['icon_url']    = esc_url_raw( $in['icon_url'] ?? '' );
+		$out['icon']        = ( ( $in['icon'] ?? '' ) === 'custom' && $out['icon_url'] ) ? 'custom' : 'whatsapp';
+		$ids                = array_filter( array_map( 'absint', explode( ',', (string) ( $in['hide_ids'] ?? '' ) ) ) );
+		$out['hide_ids']    = implode( ',', array_unique( $ids ) );
 
 		return $out;
 	}
@@ -185,7 +223,7 @@ final class SW_WhatsApp_Button {
 			return;
 		}
 		wp_enqueue_style( 'wp-color-picker' );
-		// Color vacío (transparente / sin cambio): cuadros como en Photoshop.
+		// Empty color (transparent / no change): checkerboard like in Photoshop.
 		wp_add_inline_style(
 			'wp-color-picker',
 			'.sw-wa-settings .wp-color-result:not([style*="background-color"]){background-color:#fff;background-image:repeating-conic-gradient(#d0d0d0 0 25%,#fff 0 50%);background-size:10px 10px}'
@@ -194,11 +232,12 @@ final class SW_WhatsApp_Button {
 		wp_enqueue_media();
 		wp_add_inline_script(
 			'wp-color-picker',
+			'var swWaI18n=' . wp_json_encode( array( 'mediaTitle' => __( 'Button icon', 'sw-whatsapp' ) ) ) . ';' .
 			"jQuery(function($){
 				$('.sw-color').wpColorPicker();
 				$('#sw-icon-pick').on('click',function(e){
 					e.preventDefault();
-					var f=wp.media({title:'Icono del botón',library:{type:'image'},multiple:false});
+					var f=wp.media({title:swWaI18n.mediaTitle,library:{type:'image'},multiple:false});
 					f.on('select',function(){ $('#sw-icon-url').val(f.state().get('selection').first().toJSON().url); });
 					f.open();
 				});
@@ -222,97 +261,115 @@ final class SW_WhatsApp_Button {
 				<?php settings_fields( self::SLUG ); ?>
 				<table class="form-table" role="presentation">
 					<tr>
-						<th scope="row">Activar</th>
-						<td><label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[enabled]" value="1" <?php checked( $o['enabled'] ); ?>> Mostrar el botón en la web</label></td>
+						<th scope="row"><?php esc_html_e( 'Enable', 'sw-whatsapp' ); ?></th>
+						<td><label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[enabled]" value="1" <?php checked( $o['enabled'] ); ?>> <?php esc_html_e( 'Show the button on the website', 'sw-whatsapp' ); ?></label></td>
 					</tr>
 					<tr>
-						<th scope="row"><label for="sw-phone">Número de WhatsApp</label></th>
+						<th scope="row"><label for="sw-phone"><?php esc_html_e( 'WhatsApp number', 'sw-whatsapp' ); ?></label></th>
 						<td>
 							<input id="sw-phone" type="text" class="regular-text" name="<?php echo esc_attr( $n ); ?>[phone]" value="<?php echo esc_attr( $o['phone'] ); ?>" placeholder="34600111222">
-							<p class="description">Con prefijo de país, sin «+» ni espacios (se limpian solos). Sin número el botón no se muestra.</p>
+							<p class="description"><?php esc_html_e( 'With country code, without “+” or spaces (they are removed automatically). Without a number the button is not shown.', 'sw-whatsapp' ); ?></p>
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><label for="sw-msg">Mensaje predefinido</label></th>
+						<th scope="row"><label for="sw-msg"><?php esc_html_e( 'Predefined message', 'sw-whatsapp' ); ?></label></th>
 						<td>
-							<textarea id="sw-msg" rows="3" class="large-text" name="<?php echo esc_attr( $n ); ?>[message]" placeholder="Hola, tengo una consulta sobre: {title}"><?php echo esc_textarea( $o['message'] ); ?></textarea>
-							<p class="description">Texto que aparece ya escrito al abrir el chat. Vacío = chat vacío. Variables: <code>{title}</code> — título de la página, <code>{url}</code> — enlace de la página.</p>
+							<textarea id="sw-msg" rows="3" class="large-text" name="<?php echo esc_attr( $n ); ?>[message]" placeholder="<?php esc_attr_e( 'Hi, I have a question about: {title}', 'sw-whatsapp' ); ?>"><?php echo esc_textarea( $o['message'] ); ?></textarea>
+							<p class="description">
+								<?php
+								printf(
+									/* translators: 1: {title} variable, 2: {url} variable */
+									esc_html__( 'Text already typed when the chat opens. Empty = empty chat. Variables: %1$s — page title, %2$s — page link.', 'sw-whatsapp' ),
+									'<code>{title}</code>',
+									'<code>{url}</code>'
+								);
+								?>
+							</p>
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><label for="sw-label">Texto junto al botón</label></th>
+						<th scope="row"><label for="sw-label"><?php esc_html_e( 'Text next to the button', 'sw-whatsapp' ); ?></label></th>
 						<td>
-							<input id="sw-label" type="text" class="regular-text" name="<?php echo esc_attr( $n ); ?>[label]" value="<?php echo esc_attr( $o['label'] ); ?>" placeholder="¿Hablamos?">
-							<p class="description">Solo en escritorio y tablet (≥ 768px). Vacío = sin texto.</p>
+							<input id="sw-label" type="text" class="regular-text" name="<?php echo esc_attr( $n ); ?>[label]" value="<?php echo esc_attr( $o['label'] ); ?>" placeholder="<?php esc_attr_e( 'Let’s talk?', 'sw-whatsapp' ); ?>">
+							<p class="description"><?php esc_html_e( 'Desktop and tablet only (≥ 768px). Empty = no text.', 'sw-whatsapp' ); ?></p>
 						</td>
 					</tr>
 					<tr>
-						<th scope="row">Colores</th>
+						<th scope="row"><?php esc_html_e( 'Colors', 'sw-whatsapp' ); ?></th>
 						<td>
-							<p><input type="text" class="sw-color" name="<?php echo esc_attr( $n ); ?>[bg]" value="<?php echo esc_attr( $o['bg'] ); ?>" data-default-color="#25D366"> Fondo del botón</p>
-							<p><input type="text" class="sw-color" name="<?php echo esc_attr( $n ); ?>[fg]" value="<?php echo esc_attr( $o['fg'] ); ?>" data-default-color="#FFFFFF"> Icono</p>
-							<p><input type="text" class="sw-color" name="<?php echo esc_attr( $n ); ?>[bg_hover]" value="<?php echo esc_attr( $o['bg_hover'] ); ?>" data-default-color=""> Fondo al pasar el ratón</p>
-							<p class="description">Opcional. Vacío («Borrar») = el botón no cambia de color al pasar el ratón.</p>
-							<p style="margin-top:14px"><input type="text" class="sw-color" name="<?php echo esc_attr( $n ); ?>[pulse_color]" value="<?php echo esc_attr( $o['pulse_color'] ); ?>" data-default-color=""> Pulso</p>
-							<p><input type="text" class="sw-color" name="<?php echo esc_attr( $n ); ?>[pulse_hover]" value="<?php echo esc_attr( $o['pulse_hover'] ); ?>" data-default-color=""> Pulso al pasar el ratón</p>
-							<p class="description">Opcionales. «Pulso» vacío = mismo color que el fondo del botón. «Pulso al pasar el ratón» vacío = no cambia. Solo si la animación de pulso está activada (más abajo, en Opciones).</p>
+							<p><input type="text" class="sw-color" name="<?php echo esc_attr( $n ); ?>[bg]" value="<?php echo esc_attr( $o['bg'] ); ?>" data-default-color="#25D366"> <?php esc_html_e( 'Button background', 'sw-whatsapp' ); ?></p>
+							<p><input type="text" class="sw-color" name="<?php echo esc_attr( $n ); ?>[fg]" value="<?php echo esc_attr( $o['fg'] ); ?>" data-default-color="#FFFFFF"> <?php esc_html_e( 'Icon', 'sw-whatsapp' ); ?></p>
+							<p><input type="text" class="sw-color" name="<?php echo esc_attr( $n ); ?>[bg_hover]" value="<?php echo esc_attr( $o['bg_hover'] ); ?>" data-default-color=""> <?php esc_html_e( 'Background on hover', 'sw-whatsapp' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Optional. Empty (“Clear”) = the button does not change color on hover.', 'sw-whatsapp' ); ?></p>
+							<p style="margin-top:14px"><input type="text" class="sw-color" name="<?php echo esc_attr( $n ); ?>[pulse_color]" value="<?php echo esc_attr( $o['pulse_color'] ); ?>" data-default-color=""> <?php esc_html_e( 'Pulse', 'sw-whatsapp' ); ?></p>
+							<p><input type="text" class="sw-color" name="<?php echo esc_attr( $n ); ?>[pulse_hover]" value="<?php echo esc_attr( $o['pulse_hover'] ); ?>" data-default-color=""> <?php esc_html_e( 'Pulse on hover', 'sw-whatsapp' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Optional. Empty “Pulse” = same color as the button background. Empty “Pulse on hover” = no change. Only when the pulse animation is enabled (below, in Options).', 'sw-whatsapp' ); ?></p>
 						</td>
 					</tr>
 					<tr>
-						<th scope="row">Icono</th>
+						<th scope="row"><?php esc_html_e( 'Icon', 'sw-whatsapp' ); ?></th>
 						<td>
 							<p>
-								<label><input type="radio" name="<?php echo esc_attr( $n ); ?>[icon]" value="whatsapp" <?php checked( 'custom' !== $o['icon'] ); ?>> WhatsApp (oficial, incluido)</label> &nbsp;
-								<label><input type="radio" name="<?php echo esc_attr( $n ); ?>[icon]" value="custom" <?php checked( $o['icon'], 'custom' ); ?>> Subir el tuyo</label>
+								<label><input type="radio" name="<?php echo esc_attr( $n ); ?>[icon]" value="whatsapp" <?php checked( 'custom' !== $o['icon'] ); ?>> <?php esc_html_e( 'WhatsApp (official, included)', 'sw-whatsapp' ); ?></label> &nbsp;
+								<label><input type="radio" name="<?php echo esc_attr( $n ); ?>[icon]" value="custom" <?php checked( $o['icon'], 'custom' ); ?>> <?php esc_html_e( 'Upload your own', 'sw-whatsapp' ); ?></label>
 							</p>
-							<p class="description">El icono oficial toma el color «Icono».</p>
+							<p class="description"><?php esc_html_e( 'The official icon uses the “Icon” color.', 'sw-whatsapp' ); ?></p>
 							<div id="sw-icon-custom" style="margin-top:10px">
 								<input id="sw-icon-url" type="url" class="regular-text" name="<?php echo esc_attr( $n ); ?>[icon_url]" value="<?php echo esc_attr( $o['icon_url'] ); ?>">
-								<button class="button" id="sw-icon-pick">Elegir</button>
-								<button class="button-link" id="sw-icon-clear">Quitar</button>
-								<p class="description">SVG/PNG de la biblioteca de medios, cuadrado y con fondo transparente. Se muestra tal cual (no se recolorea).</p>
+								<button class="button" id="sw-icon-pick"><?php esc_html_e( 'Choose', 'sw-whatsapp' ); ?></button>
+								<button class="button-link" id="sw-icon-clear"><?php esc_html_e( 'Remove', 'sw-whatsapp' ); ?></button>
+								<p class="description"><?php esc_html_e( 'SVG/PNG from the media library, square with a transparent background. Shown as is (not recolored).', 'sw-whatsapp' ); ?></p>
 							</div>
 						</td>
 					</tr>
 					<tr>
-						<th scope="row">Posición</th>
+						<th scope="row"><?php esc_html_e( 'Position', 'sw-whatsapp' ); ?></th>
 						<td>
 							<select name="<?php echo esc_attr( $n ); ?>[position]">
-								<option value="right" <?php selected( $o['position'], 'right' ); ?>>Abajo a la derecha</option>
-								<option value="left" <?php selected( $o['position'], 'left' ); ?>>Abajo a la izquierda</option>
+								<option value="right" <?php selected( $o['position'], 'right' ); ?>><?php esc_html_e( 'Bottom right', 'sw-whatsapp' ); ?></option>
+								<option value="left" <?php selected( $o['position'], 'left' ); ?>><?php esc_html_e( 'Bottom left', 'sw-whatsapp' ); ?></option>
 							</select>
 							<p>
-								Margen lateral <input type="number" min="0" max="200" class="small-text" name="<?php echo esc_attr( $n ); ?>[offset_x]" value="<?php echo esc_attr( $o['offset_x'] ); ?>"> px &nbsp;
-								Margen inferior <input type="number" min="0" max="300" class="small-text" name="<?php echo esc_attr( $n ); ?>[offset_y]" value="<?php echo esc_attr( $o['offset_y'] ); ?>"> px &nbsp;
-								Tamaño <input type="number" min="40" max="100" class="small-text" name="<?php echo esc_attr( $n ); ?>[size]" value="<?php echo esc_attr( $o['size'] ); ?>"> px
+								<?php esc_html_e( 'Side margin', 'sw-whatsapp' ); ?> <input type="number" min="0" max="200" class="small-text" name="<?php echo esc_attr( $n ); ?>[offset_x]" value="<?php echo esc_attr( $o['offset_x'] ); ?>"> px &nbsp;
+								<?php esc_html_e( 'Bottom margin', 'sw-whatsapp' ); ?> <input type="number" min="0" max="300" class="small-text" name="<?php echo esc_attr( $n ); ?>[offset_y]" value="<?php echo esc_attr( $o['offset_y'] ); ?>"> px &nbsp;
+								<?php esc_html_e( 'Size', 'sw-whatsapp' ); ?> <input type="number" min="40" max="100" class="small-text" name="<?php echo esc_attr( $n ); ?>[size]" value="<?php echo esc_attr( $o['size'] ); ?>"> px
 							</p>
-							<p class="description">En móvil el botón se reduce automáticamente al 85%.</p>
+							<p class="description"><?php esc_html_e( 'On mobile the button is automatically reduced to 85%.', 'sw-whatsapp' ); ?></p>
 						</td>
 					</tr>
 					<tr>
-						<th scope="row">Dispositivos</th>
+						<th scope="row"><?php esc_html_e( 'Devices', 'sw-whatsapp' ); ?></th>
 						<td>
-							<label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[desktop]" value="1" <?php checked( $o['desktop'] ); ?>> Escritorio (&gt; 1024px)</label><br>
-							<label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[mobile]" value="1" <?php checked( $o['mobile'] ); ?>> Móvil y tablet (≤ 1024px)</label>
+							<label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[desktop]" value="1" <?php checked( $o['desktop'] ); ?>> <?php esc_html_e( 'Desktop (> 1024px)', 'sw-whatsapp' ); ?></label><br>
+							<label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[mobile]" value="1" <?php checked( $o['mobile'] ); ?>> <?php esc_html_e( 'Mobile and tablet (≤ 1024px)', 'sw-whatsapp' ); ?></label>
 						</td>
 					</tr>
 					<tr>
-						<th scope="row">Opciones</th>
+						<th scope="row"><?php esc_html_e( 'Options', 'sw-whatsapp' ); ?></th>
 						<td>
-							<label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[pulse]" value="1" <?php checked( $o['pulse'] ); ?>> Animación de pulso</label><br>
-							<label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[new_tab]" value="1" <?php checked( $o['new_tab'] ); ?>> Abrir en pestaña nueva</label><br>
-							<label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[hide_woo]" value="1" <?php checked( $o['hide_woo'] ); ?>> Ocultar en carrito y checkout de WooCommerce</label>
+							<label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[pulse]" value="1" <?php checked( $o['pulse'] ); ?>> <?php esc_html_e( 'Pulse animation', 'sw-whatsapp' ); ?></label><br>
+							<label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[new_tab]" value="1" <?php checked( $o['new_tab'] ); ?>> <?php esc_html_e( 'Open in a new tab', 'sw-whatsapp' ); ?></label><br>
+							<label><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[hide_woo]" value="1" <?php checked( $o['hide_woo'] ); ?>> <?php esc_html_e( 'Hide on WooCommerce cart and checkout', 'sw-whatsapp' ); ?></label>
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><label for="sw-hide">Ocultar en páginas (ID)</label></th>
+						<th scope="row"><label for="sw-hide"><?php esc_html_e( 'Hide on pages (ID)', 'sw-whatsapp' ); ?></label></th>
 						<td>
 							<input id="sw-hide" type="text" class="regular-text" name="<?php echo esc_attr( $n ); ?>[hide_ids]" value="<?php echo esc_attr( $o['hide_ids'] ); ?>" placeholder="12, 345">
-							<p class="description">IDs de páginas, entradas o productos separados por comas.</p>
+							<p class="description"><?php esc_html_e( 'Page, post or product IDs separated by commas.', 'sw-whatsapp' ); ?></p>
 						</td>
 					</tr>
 				</table>
-				<p class="description">Analítica: cada clic envía <code>dataLayer.push({event:'whatsapp_click'})</code> — crea en GTM un activador de evento personalizado <code>whatsapp_click</code>.</p>
+				<p class="description">
+					<?php
+					printf(
+						/* translators: 1: dataLayer code, 2: event name */
+						esc_html__( 'Analytics: each click sends %1$s — create a custom event trigger %2$s in GTM.', 'sw-whatsapp' ),
+						"<code>dataLayer.push({event:'whatsapp_click'})</code>",
+						'<code>whatsapp_click</code>'
+					);
+					?>
+				</p>
 				<?php submit_button(); ?>
 			</form>
 		</div>
@@ -413,7 +470,7 @@ final class SW_WhatsApp_Button {
 		if ( 'custom' === $o['icon'] && $o['icon_url'] ) {
 			$icon = '<img src="' . esc_url( $o['icon_url'] ) . '" alt="" width="32" height="32" loading="lazy" decoding="async">';
 		} elseif ( 'chat' === $o['icon'] ) {
-			// Compatibilidad: webs que eligieron «Chat genérico» en versiones anteriores.
+			// Compatibility: sites that chose the generic chat icon in older versions.
 			$icon = self::default_icon();
 		} else {
 			$icon   = '<span class="sw-wa__glyph" aria-hidden="true"></span>';
@@ -443,7 +500,7 @@ final class SW_WhatsApp_Button {
 @media (prefers-reduced-motion:reduce){.sw-wa__btn{transition:none}.sw-wa--pulse .sw-wa__btn::before{display:none}}
 @media print{.sw-wa{display:none}}
 </style>
-<a class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" style="<?php echo esc_attr( $style ); ?>" href="<?php echo esc_url( self::build_url( $phone, $o['message'] ) ); ?>"<?php echo $target; // phpcs:ignore ?> rel="noopener nofollow" aria-label="Escríbenos por WhatsApp">
+<a class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" style="<?php echo esc_attr( $style ); ?>" href="<?php echo esc_url( self::build_url( $phone, $o['message'] ) ); ?>"<?php echo $target; // phpcs:ignore ?> rel="noopener nofollow" aria-label="<?php esc_attr_e( 'Write to us on WhatsApp', 'sw-whatsapp' ); ?>">
 	<span class="sw-wa__btn"><?php echo $icon; // phpcs:ignore -- escaped above / static SVG ?></span>
 	<?php if ( $o['label'] ) : ?><span class="sw-wa__label"><?php echo esc_html( $o['label'] ); ?></span><?php endif; ?>
 </a>
